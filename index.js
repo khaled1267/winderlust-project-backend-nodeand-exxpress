@@ -16,7 +16,24 @@ const uri = process.env.MONGO_URI;
 
 const app = express()
 const port = process.env.PORT
-app.use(cors())
+const allowedOrigins = [
+  'http://localhost:3000',
+  "https://wanderlush-project-server.vercel.app"
+]
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
+
 app.use(express.json())
 const client = new MongoClient(uri, {
   serverApi: {
@@ -78,6 +95,12 @@ async function run() {
      res.send(result)
 
       
+    })
+
+    app.get ("/featured", async(req, res) => {
+      const result = await dbcollection.find().limit(4).toArray()
+      console.log(result)
+      res.json(result)
     })
 
     app.get ('/dastinations/:id', varifytoken , async(req, res) => {
